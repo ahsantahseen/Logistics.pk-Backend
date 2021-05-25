@@ -1,5 +1,16 @@
 const oracledb = require("oracledb");
+const refactorizor = (arr) => {
+  const temp = [];
+  let tempDect = {};
+  for (let i = 0; i < arr.rows.length; i++) {
+    for (let j = 0; j < arr.rows[0].length; j++) {
+      tempDect[arr.metaData[j].name] = arr.rows[i][j];
+    }
+    temp.push({ ...tempDect });
+  }
 
+  return temp;
+};
 exports.service_center_get_all = async (req, res) => {
   try {
     connection = await oracledb.getConnection({
@@ -7,26 +18,39 @@ exports.service_center_get_all = async (req, res) => {
       password: "123",
       connectString: "0.0.0.0/XE",
     });
-    result = await connection.execute(`SELECT * FROM SERVICE_CENTER`);
+    const result = await connection.execute(`SELECT * FROM SERVICE_CENTER`);
+    console.log(result);
+
     return res
       .json({
-        name: result.metaData,
-        rows: result.rows,
+        data: refactorizor(result),
       })
       .status(200);
   } catch (err) {
-    console.error(err.message);
+    res
+      .json({
+        error: err,
+      })
+      .status(404);
   } finally {
     if (connection) {
       try {
         await connection.close();
+        return res
+          .json({
+            message: req.body,
+          })
+          .status(400);
       } catch (err) {
-        console.error(err.message);
+        return res
+          .json({
+            error: err,
+          })
+          .status(400);
       }
     }
   }
 };
-
 exports.service_center_get_by_id = async (req, res) => {
   try {
     connection = await oracledb.getConnection({
@@ -35,15 +59,15 @@ exports.service_center_get_by_id = async (req, res) => {
       connectString: "0.0.0.0/XE",
     });
     let id = req.params;
-    result = await connection.execute(
+    let result = await connection.execute(
       `SELECT * FROM SERVICE_CENTER WHERE ID=:id`,
       id
     );
-    if (result.rows[0]) {
+
+    if (result.rows) {
       return res
         .json({
-          name: result.metaData,
-          rows: result.rows,
+          data: refactorizor(result),
         })
         .status(200);
     } else {
@@ -51,16 +75,29 @@ exports.service_center_get_by_id = async (req, res) => {
         .json({
           error: "NO ROWS FOUND!",
         })
-        .status(400);
+        .status(404);
     }
   } catch (err) {
-    console.error(err.message);
+    return res
+      .json({
+        error: err,
+      })
+      .status(400);
   } finally {
     if (connection) {
       try {
         await connection.close();
+        return res
+          .json({
+            message: req.body,
+          })
+          .status(400);
       } catch (err) {
-        console.error(err.message);
+        return res
+          .json({
+            error: err,
+          })
+          .status(400);
       }
     }
   }
@@ -81,8 +118,7 @@ exports.service_center_get_by_location = async (req, res) => {
     if (result.rows[0]) {
       return res
         .json({
-          name: result.metaData,
-          rows: result.rows,
+          data: refactorizor(result),
         })
         .status(200);
     } else {
@@ -93,13 +129,26 @@ exports.service_center_get_by_location = async (req, res) => {
         .status(400);
     }
   } catch (err) {
-    console.error(err.message);
+    return res
+      .json({
+        error: err,
+      })
+      .status(400);
   } finally {
     if (connection) {
       try {
         await connection.close();
+        return res
+          .json({
+            message: req.body,
+          })
+          .status(400);
       } catch (err) {
-        console.error(err.message);
+        return res
+          .json({
+            error: err,
+          })
+          .status(400);
       }
     }
   }
@@ -112,7 +161,6 @@ exports.service_center_post_record = async (req, res) => {
       connectString: "0.0.0.0/XE",
     });
     let data = req.body;
-    console.log("121221");
     if (data === null) {
       return res
         .json({
@@ -121,37 +169,141 @@ exports.service_center_post_record = async (req, res) => {
         .status(400);
     }
     result = await connection.execute(
-      `INSERT INTO SERVICE_CENTER (LOCATION,STAFF_AMOUNT,ALLOCATED_TRANSPORT,MANAGER_ID,RATING) VALUES (:dataLocation,:dataRating,:dataSA,:dataAT,:dataMID:dataRating)`,
+      `INSERT INTO SERVICE_CENTER (ID,LOCATION,STAFF_AMOUNT,ALLOCATED_TRANSPORT,MANAGER_ID,RATING) 
+      VALUES (:dataID,:dataLocation,:dataRating,:dataSA,:dataAT,:dataMID:dataRating)`,
+      [
+        Math.floor(1000 + Math.random() * 9000),
+        data.location,
+        data.staffamount,
+        data.allocatedtransport,
+        data.managerid,
+        data.rating,
+      ],
+      { autoCommit: true }
+    );
+  } catch (err) {
+    return res
+      .json({
+        error: err,
+      })
+      .status(400);
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+        return res
+          .json({
+            message: req.body,
+          })
+          .status(400);
+      } catch (err) {
+        return res
+          .json({
+            error: err,
+          })
+          .status(400);
+      }
+    }
+  }
+};
+exports.service_center_alter_record = async (req, res) => {
+  try {
+    connection = await oracledb.getConnection({
+      user: "C##_LOGI",
+      password: "123",
+      connectString: "0.0.0.0/XE",
+    });
+    let data = req.body;
+    console.log(data);
+    if (data === null) {
+      return res
+        .json({
+          message: "DATA IS NULL",
+        })
+        .status(400);
+    }
+
+    result = await connection.execute(
+      `UPDATE SERVICE_CENTER SET LOCATION=:dataLocation,
+      STAFF_AMOUNT=:dataSA,
+      ALLOCATED_TRANSPORT=:dataAT,
+      MANAGER_ID=:dataMID,RATING=:dataRating WHERE ID=:dataID`,
       [
         data.location,
         parseInt(data.staffamount),
         parseInt(data.allocatedtransport),
         parseInt(data.managerid),
         parseFloat(data.rating),
+        parseInt(data.id),
       ],
       { autoCommit: true }
     );
-    if (result.rows[0]) {
-      return res
-        .json({
-          message: "Successfully added rows",
-        })
-        .status(201);
-    } else {
-      return res
-        .json({
-          error: "CANNOT INSERT A RECORD!",
-        })
-        .status(400);
-    }
   } catch (err) {
-    console.error(err.message);
+    return res
+      .json({
+        error: err,
+      })
+      .status(400);
   } finally {
     if (connection) {
       try {
         await connection.close();
+        return res
+          .json({
+            message: req.body,
+          })
+          .status(400);
       } catch (err) {
-        console.error(err.message);
+        return res
+          .json({
+            error: err,
+          })
+          .status(400);
+      }
+    }
+  }
+};
+exports.service_center_delete_record = async (req, res) => {
+  try {
+    connection = await oracledb.getConnection({
+      user: "C##_LOGI",
+      password: "123",
+      connectString: "0.0.0.0/XE",
+    });
+    let data = req.body;
+    if (data === null) {
+      return res
+        .json({
+          message: "DATA IS NULL",
+        })
+        .status(400);
+    }
+    result = await connection.execute(
+      `DELETE FROM SERVICE_CENTER WHERE ID=:dataID`,
+      [data.id],
+      { autoCommit: true }
+    );
+  } catch (err) {
+    return res
+      .json({
+        error: err,
+      })
+      .status(400);
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+        return res
+          .json({
+            message: req.body,
+          })
+          .status(400);
+      } catch (err) {
+        return res
+          .json({
+            error: err,
+          })
+          .status(400);
       }
     }
   }

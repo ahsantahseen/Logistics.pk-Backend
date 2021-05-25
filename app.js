@@ -5,7 +5,13 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const cors = require("cors");
 const app = express();
+
 const serviceCenterRoute = require("./routes/ServiceCenter");
+const packagesRoute = require("./routes/Package");
+const staffRoute = require("./routes/Staff");
+const transportationRoute = require("./routes/Transport");
+const usersRoute = require("./routes/User");
+
 app.use(cors());
 app.use(
   bodyParser.urlencoded({
@@ -13,6 +19,7 @@ app.use(
   })
 );
 app.use(bodyParser.json());
+app.use("/uploads", express.static("uploads"));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*"); //change to your own site if you have one and allow to use it only
@@ -28,7 +35,12 @@ app.use((req, res, next) => {
   next();
 });
 app.use(morgan("combined"));
+
 app.use("/serviceCenter", serviceCenterRoute);
+app.use("/packages", packagesRoute);
+app.use("/staff", staffRoute);
+app.use("/transportation", transportationRoute);
+app.use("/user", usersRoute);
 // const mypw = "123"; // set mypw to the hr schema password
 
 // const getProducts = async (req, res) => {
