@@ -1,4 +1,8 @@
 const oracledb = require("oracledb");
+const accountSid = "ACc4a83117f0f13f7dc77125998dc2fc26";
+const authToken = "729f97f20db463c1d2413bbdd5194216";
+const client = require("twilio")(accountSid, authToken);
+
 const refactorizor = (arr) => {
   const temp = [];
   let tempDect = {};
@@ -25,26 +29,13 @@ exports.packages_get_all = async (req, res) => {
       })
       .status(200);
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -80,17 +71,8 @@ exports.packages_get_by_id = async (req, res) => {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -122,26 +104,13 @@ exports.packages_get_by_status = async (req, res) => {
         .status(400);
     }
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -173,26 +142,13 @@ exports.packages_get_by_service_center_id = async (req, res) => {
         .status(400);
     }
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -212,11 +168,12 @@ exports.packages_post_record = async (req, res) => {
         })
         .status(400);
     }
+    let packageID = Math.floor(1000 + Math.random() * 9000);
     result = await connection.execute(
-      `INSERT INTO PACKAGES (ID,WEIGHT,DIMENSIONS,FRAGILE,INSURANCE_AMOUNT,STATUS,DESTINATION,SERVICE_CENTER_ID) 
-      VALUES (:dataID,:dataWeight,:dataDimensions,:dataFraglie,:dataIA,:dataStatus,:dataDestination,:datascID)`,
+      `INSERT INTO PACKAGES (ID,WEIGHT,DIMENSIONS,FRAGILE,INSURANCE_AMOUNT,STATUS,DESTINATION,SERVICE_CENTER_ID,CUSTOMER_ID,CUSTOMER_PHONE) 
+      VALUES (:dataID,:dataWeight,:dataDimensions,:dataFraglie,:dataIA,:dataStatus,:dataDestination,:datascID,:dataCustomerID,:dataCustomerPhone)`,
       [
-        Math.floor(100 + Math.random() * 9000),
+        packageID,
         data.weight,
         data.dimensions,
         data.fragile,
@@ -224,30 +181,29 @@ exports.packages_post_record = async (req, res) => {
         data.status,
         data.destination,
         data.scID,
+        data.customer_id,
+        data.customer_phone,
       ],
       { autoCommit: true }
     );
-  } catch (err) {
-    return res
-      .json({
-        error: err,
+    client.messages
+      .create({
+        body: `Dear Customer, your package ${packageID} has been received by our Service Center ${data.scID} Package Weight:${data.weight} kg with the insurance amount of ${data.insuranceAmount} RS and will be shipped to ${data.destination} \n \n Thank you for using Logistics.pk`,
+        from: "+13476585460",
+        to: data.customer_phone,
       })
-      .status(400);
+      .then((message) => console.log(message))
+      .catch((error) => {
+        console.log(error);
+      });
+  } catch (err) {
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -270,7 +226,7 @@ exports.packages_alter_record = async (req, res) => {
     }
     result = await connection.execute(
       `UPDATE PACKAGES SET WEIGHT=:dataWeight,DIMENSIONS=:dataDimensions
-      ,FRAGILE=:dataFraglie,INSURANCE_AMOUNT=:dataIA,STATUS=:dataStatus,DESTINATION=:dataDestination,SERVICE_CENTER_ID=:dataSCID
+      ,FRAGILE=:dataFraglie,INSURANCE_AMOUNT=:dataIA,STATUS=:dataStatus,DESTINATION=:dataDestination,SERVICE_CENTER_ID=:dataSCID,CUSTOMER_ID=:dataCustomerID,CUSTOMER_PHONE=:dataCustomerPhone
        WHERE ID=:dataID`,
       [
         parseFloat(data.weight),
@@ -280,31 +236,20 @@ exports.packages_alter_record = async (req, res) => {
         data.status,
         data.destination,
         parseInt(data.scID),
+        parseInt(data.customer_id),
+        data.customer_phone,
         parseInt(data.id),
       ],
       { autoCommit: true }
     );
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -330,26 +275,13 @@ exports.packages_delete_record = async (req, res) => {
       { autoCommit: true }
     );
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }

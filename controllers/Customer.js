@@ -1,4 +1,8 @@
 const oracledb = require("oracledb");
+const accountSid = "ACc4a83117f0f13f7dc77125998dc2fc26";
+const authToken = "729f97f20db463c1d2413bbdd5194216";
+const client = require("twilio")(accountSid, authToken);
+
 const refactorizor = (arr) => {
   const temp = [];
   let tempDect = {};
@@ -11,63 +15,19 @@ const refactorizor = (arr) => {
 
   return temp;
 };
-exports.service_center_get_all = async (req, res) => {
+exports.customers_get_all = async (req, res) => {
   try {
     connection = await oracledb.getConnection({
       user: "C##_LOGI",
       password: "123",
       connectString: "0.0.0.0/XE",
     });
-    const result = await connection.execute(`SELECT * FROM SERVICE_CENTER`);
-    console.log(result);
-
+    result = await connection.execute(`SELECT * FROM CUSTOMERS`);
     return res
       .json({
         data: refactorizor(result),
       })
       .status(200);
-  } catch (err) {
-    res
-      .json({
-        data: null,
-      })
-      .status(404);
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error(err.message);
-      }
-    }
-  }
-};
-exports.service_center_get_by_id = async (req, res) => {
-  try {
-    connection = await oracledb.getConnection({
-      user: "C##_LOGI",
-      password: "123",
-      connectString: "0.0.0.0/XE",
-    });
-    let id = req.params;
-    let result = await connection.execute(
-      `SELECT * FROM SERVICE_CENTER WHERE ID=:id`,
-      id
-    );
-
-    if (result.rows) {
-      return res
-        .json({
-          data: refactorizor(result),
-        })
-        .status(200);
-    } else {
-      return res
-        .json({
-          data: null,
-        })
-        .status(404);
-    }
   } catch (err) {
     console.error(err.message);
   } finally {
@@ -80,18 +40,17 @@ exports.service_center_get_by_id = async (req, res) => {
     }
   }
 };
-exports.service_center_get_by_location = async (req, res) => {
+exports.customers_get_by_id = async (req, res) => {
   try {
     connection = await oracledb.getConnection({
       user: "C##_LOGI",
       password: "123",
       connectString: "0.0.0.0/XE",
     });
-    let location = req.params;
-    console.log(location);
+    let id = req.params;
     result = await connection.execute(
-      `SELECT * FROM SERVICE_CENTER WHERE LOCATION=:location`,
-      location
+      `SELECT * FROM CUSTOMERS WHERE ID=:id`,
+      id
     );
     if (result.rows[0]) {
       return res
@@ -118,7 +77,7 @@ exports.service_center_get_by_location = async (req, res) => {
     }
   }
 };
-exports.service_center_post_record = async (req, res) => {
+exports.customers_post_record = async (req, res) => {
   try {
     connection = await oracledb.getConnection({
       user: "C##_LOGI",
@@ -134,18 +93,26 @@ exports.service_center_post_record = async (req, res) => {
         .status(400);
     }
     result = await connection.execute(
-      `INSERT INTO SERVICE_CENTER (ID,LOCATION,STAFF_AMOUNT,ALLOCATED_TRANSPORT,MANAGER_ID,RATING) 
-      VALUES (:dataID,:dataLocation,:dataRating,:dataSA,:dataAT,:dataMID:dataRating)`,
+      `INSERT INTO CUSTOMERS (ID,NAME,PHONE_NUMBER,ADDRESS) 
+        VALUES (:dataID,:dataName,:dataPnumber,:dataAddress)`,
       [
-        Math.floor(1000 + Math.random() * 9000),
-        data.location,
-        data.staffamount,
-        data.allocatedtransport,
-        data.managerid,
-        data.rating,
+        Math.floor(100 + Math.random() * 9000),
+        data.name,
+        data.phone_number,
+        data.address,
       ],
       { autoCommit: true }
     );
+    client.messages
+      .create({
+        body: `Dear ${data.name} your order has been placed, you'll be soon in touch with our package collection team  \n \n Thank you for using Logistics.pk`,
+        from: "+13476585460",
+        to: data.phone_number,
+      })
+      .then((message) => console.log(message))
+      .catch((error) => {
+        console.log(error);
+      });
   } catch (err) {
     console.error(err.message);
   } finally {
@@ -158,51 +125,8 @@ exports.service_center_post_record = async (req, res) => {
     }
   }
 };
-exports.service_center_alter_record = async (req, res) => {
-  try {
-    connection = await oracledb.getConnection({
-      user: "C##_LOGI",
-      password: "123",
-      connectString: "0.0.0.0/XE",
-    });
-    let data = req.body;
-    console.log(data);
-    if (data === null) {
-      return res
-        .json({
-          message: "DATA IS NULL",
-        })
-        .status(400);
-    }
 
-    result = await connection.execute(
-      `UPDATE SERVICE_CENTER SET LOCATION=:dataLocation,
-      STAFF_AMOUNT=:dataSA,
-      ALLOCATED_TRANSPORT=:dataAT,
-      MANAGER_ID=:dataMID,RATING=:dataRating WHERE ID=:dataID`,
-      [
-        data.location,
-        parseInt(data.staffamount),
-        parseInt(data.allocatedtransport),
-        parseInt(data.managerid),
-        parseFloat(data.rating),
-        parseInt(data.id),
-      ],
-      { autoCommit: true }
-    );
-  } catch (err) {
-    console.error(err.message);
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error(err.message);
-      }
-    }
-  }
-};
-exports.service_center_delete_record = async (req, res) => {
+exports.customers_alter_record = async (req, res) => {
   try {
     connection = await oracledb.getConnection({
       user: "C##_LOGI",
@@ -218,7 +142,40 @@ exports.service_center_delete_record = async (req, res) => {
         .status(400);
     }
     result = await connection.execute(
-      `DELETE FROM SERVICE_CENTER WHERE ID=:dataID`,
+      `UPDATE CUSTOMERS SET NAME=:dataName,PHONE_NUMBER=:dataPnumber,ADDRESS=:dataAddress 
+          WHERE ID=:dataID`,
+      [data.name, data.phone_number, data.address, parseInt(data.id)],
+      { autoCommit: true }
+    );
+  } catch (err) {
+    console.error(err.message);
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error(err.message);
+      }
+    }
+  }
+};
+exports.customers_delete_record = async (req, res) => {
+  try {
+    connection = await oracledb.getConnection({
+      user: "C##_LOGI",
+      password: "123",
+      connectString: "0.0.0.0/XE",
+    });
+    let data = req.body;
+    if (data === null) {
+      return res
+        .json({
+          message: "DATA IS NULL",
+        })
+        .status(400);
+    }
+    result = await connection.execute(
+      `DELETE FROM CUSTOMERS WHERE ID=:dataID`,
       [data.id],
       { autoCommit: true }
     );

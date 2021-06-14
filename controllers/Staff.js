@@ -26,26 +26,13 @@ exports.staff_get_all = async (req, res) => {
       })
       .status(200);
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -74,26 +61,13 @@ exports.staff_get_by_id = async (req, res) => {
         .status(400);
     }
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -126,26 +100,13 @@ exports.staff_get_by_name = async (req, res) => {
         .status(400);
     }
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -158,11 +119,11 @@ exports.staff_get_by_age = async (req, res) => {
       password: "123",
       connectString: "0.0.0.0/XE",
     });
-    let AGE = req.params;
+    let NAME = req.params;
     console.log(location);
     result = await connection.execute(
       `SELECT * FROM STAFF WHERE AGE=:AGE`,
-      AGE
+      NAME
     );
     if (result.rows[0]) {
       return res
@@ -178,26 +139,13 @@ exports.staff_get_by_age = async (req, res) => {
         .status(400);
     }
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -210,7 +158,7 @@ exports.staff_get_by_emailAddress = async (req, res) => {
       password: "123",
       connectString: "0.0.0.0/XE",
     });
-    let EMAIL_ADDRESS = req.params;
+    let NAME = req.params;
     console.log(location);
     result = await connection.execute(
       `SELECT * FROM STAFF WHERE EMAIL_ADDRESS=:EMAIL_ADDRESS`,
@@ -230,26 +178,13 @@ exports.staff_get_by_emailAddress = async (req, res) => {
         .status(400);
     }
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -271,8 +206,8 @@ exports.staff_post_record = async (req, res) => {
         .status(400);
     }
     result = await connection.execute(
-      `INSERT INTO STAFF (ID,NAME,ADDRESS,AGE,CONTACT_NUMBER,CNIC_NUMBER,SERVICE_CENTER_ID,ROLE,PICTURE,EMAIL_ADDRESS) 
-      VALUES (:dataID,:dataname,:dataAddress,:dataAge,:dataContactNumber,:dataCnicNumber,:dataSCID,:dataRole,:dataPicture,:dataEmail)`,
+      `INSERT INTO STAFF (ID,NAME,ADDRESS,AGE,CONTACT_NUMBER,CNIC_NUMBER,SERVICE_CENTER_ID,ROLE,EMAIL_ADDRESS) 
+      VALUES (:dataID,:dataname,:dataAddress,:dataAge,:dataContactNumber,:dataCnicNumber,:dataSCID,:dataRole,:dataEmail)`,
       [
         Math.floor(100 + Math.random() * 9000),
         data.name,
@@ -282,32 +217,18 @@ exports.staff_post_record = async (req, res) => {
         data.cnicNumber,
         data.scID,
         data.role,
-        req.file.path.toString(),
         data.emailAddress,
       ],
       { autoCommit: true }
     );
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -330,7 +251,7 @@ exports.staff_alter_record = async (req, res) => {
     console.log(parseInt(data.id));
     result = await connection.execute(
       `UPDATE STAFF SET NAME=:dataNAME,ADDRESS=:dataAddress,AGE=:dataAGE,CONTACT_NUMBER=:dataContactNumber,CNIC_NUMBER=:dataCNICnumber
-      ,SERVICE_CENTER_ID=:dataSCID,ROLE=:dataRole,PICTURE=:dataPicture,EMAIL_ADDRESS=:dataEmail
+      ,SERVICE_CENTER_ID=:dataSCID,ROLE=:dataRole,EMAIL_ADDRESS=:dataEmail
        WHERE ID=:dataID`,
       [
         data.name,
@@ -340,33 +261,19 @@ exports.staff_alter_record = async (req, res) => {
         parseInt(data.cnicNumber),
         parseInt(data.scID),
         data.role,
-        req.file.path.toString(),
         data.emailAddress,
         parseInt(data.id),
       ],
       { autoCommit: true }
     );
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -393,26 +300,13 @@ exports.staff_delete_record = async (req, res) => {
       { autoCommit: true }
     );
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }

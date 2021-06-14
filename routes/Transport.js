@@ -6,21 +6,29 @@ const TRANSPORATION_CONTROLLER = require("../controllers/Transport");
 const { transportation_post_record } = require("../controllers/Transport");
 const { transportation_alter_record } = require("../controllers/Transport");
 const { transportation_delete_record } = require("../controllers/Transport");
+const checkAuth = require("../auth/checkAuth");
 
-router.get("/", TRANSPORATION_CONTROLLER.transportation_get_all);
+router.get("/", checkAuth, TRANSPORATION_CONTROLLER.transportation_get_all);
 
-router.get("/id/:id", TRANSPORATION_CONTROLLER.transportation_get_by_id);
+router.get(
+  "/id/:id",
+  checkAuth,
+  TRANSPORATION_CONTROLLER.transportation_get_by_id
+);
 
-router.post("/add", (req, res) => {
+router.post("/add", checkAuth, async (req, res) => {
   transportation_post_record(req, res);
+  return res.send(req.body).status(201);
 });
 
-router.put("/update", (req, res) => {
+router.put("/update", checkAuth, async (req, res) => {
   transportation_alter_record(req, res);
+  return res.send(req.body).status(202);
 });
 
-router.post("/delete", (req, res) => {
+router.post("/delete", checkAuth, async (req, res) => {
   transportation_delete_record(req, res);
+  return res.send(req.body).status(202);
 });
 
 module.exports = router;

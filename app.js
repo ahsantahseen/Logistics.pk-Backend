@@ -10,6 +10,7 @@ const serviceCenterRoute = require("./routes/ServiceCenter");
 const packagesRoute = require("./routes/Package");
 const staffRoute = require("./routes/Staff");
 const transportationRoute = require("./routes/Transport");
+const customerRoute = require("./routes/Customer");
 const usersRoute = require("./routes/User");
 
 app.use(cors());
@@ -40,123 +41,9 @@ app.use("/serviceCenter", serviceCenterRoute);
 app.use("/packages", packagesRoute);
 app.use("/staff", staffRoute);
 app.use("/transportation", transportationRoute);
+app.use("/customer", customerRoute);
 app.use("/user", usersRoute);
-// const mypw = "123"; // set mypw to the hr schema password
 
-// const getProducts = async (req, res) => {
-//   try {
-//     connection = await oracledb.getConnection({
-//       user: "PRODUCTS_USER",
-//       password: mypw,
-//       connectString: "0.0.0.0/XEPDB1",
-//     });
-
-//     result = await connection.execute(`SELECT * FROM PRODUCTS`);
-//     return res
-//       .json({
-//         name: result.metaData,
-//         rows: result.rows,
-//       })
-//       .status(200);
-//   } catch (err) {
-//     console.error(err.message);
-//   } finally {
-//     if (connection) {
-//       try {
-//         await connection.close(); // Always close connections
-//       } catch (err) {
-//         console.error(err.message);
-//       }
-//     }
-//   }
-// };
-// const getProductsByName = async (req, res, id) => {
-//   try {
-//     connection = await oracledb.getConnection({
-//       user: "PRODUCTS_USER",
-//       password: mypw,
-//       connectString: "0.0.0.0/XEPDB1",
-//     });
-//     result = await connection.execute(
-//       `SELECT * FROM PRODUCTS WHERE NAME=:id`,
-//       id
-//     );
-//     console.log(id);
-//     return res
-//       .json({
-//         res: result,
-//       })
-//       .status(200);
-//   } catch (err) {
-//     console.error(err.message);
-//   } finally {
-//     if (connection) {
-//       try {
-//         await connection.close(); // Always close connections
-//       } catch (err) {
-//         console.error(err.message);
-//       }
-//     }
-//   }
-// };
-// const postProduct = async (req, res, data) => {
-//   try {
-//     connection = await oracledb.getConnection({
-//       user: "PRODUCTS_USER",
-//       password: mypw,
-//       connectString: "0.0.0.0/XEPDB1",
-//     });
-//     console.log(data.name, parseInt(data.price));
-//     result = await connection.execute(
-//       `INSERT INTO PRODUCTS (NAME,PRICE) VALUES (:dataName,:convPrice)`,
-//       [data.name, parseInt(data.price)],
-//       { autoCommit: true }
-//     );
-//     return res
-//       .json({
-//         result,
-//       })
-//       .status(200);
-//   } catch (err) {
-//     console.error(err.message);
-//   } finally {
-//     if (connection) {
-//       try {
-//         await connection.close(); // Always close connections
-//       } catch (err) {
-//         console.error(err.message);
-//       }
-//     }
-//   }
-// };
-// app.get("/products", (req, res) => {
-//   getProducts(req, res);
-// });
-
-// app.get("/product/:id", (req, res) => {
-//   let id = req.params;
-//   console.log(id);
-//   if (id === null) {
-//     return res
-//       .json({
-//         message: "Error",
-//       })
-//       .status(400);
-//   }
-//   getProductsByName(req, res, id);
-// });
-// app.post("/addproduct/:name&:price", (req, res) => {
-//   let data = req.params;
-//   console.log(data);
-//   if (data === null) {
-//     return res
-//       .json({
-//         message: "Error",
-//       })
-//       .status(400);
-//   }
-//   postProduct(req, res, data);
-// });
 app.use((req, res, next) => {
   const error = new Error("Not Found!");
   error.stack = 404;

@@ -10,57 +10,37 @@ const { staff_post_record } = require("../controllers/Staff");
 const { staff_alter_record } = require("../controllers/Staff");
 
 const { staff_delete_record } = require("../controllers/Staff");
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      new Date().toISOString().replace(/:|\./g, "") + "-" + file.originalname
-    );
-  },
-});
 
-const fileFilter = (req, file, cb) => {
-  let files = fs.readdirSync("./uploads/");
-  if (files.includes(file.originalname)) {
-    fs.unlinkSync("./uploads/" + file.originalname);
-  }
-  if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
-    cb(null, true);
-  } else {
-    cb(new Error("File Cannot Be Stored! Check requirements"), false);
-  }
-};
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 5,
-  },
-  fileFilter: fileFilter,
-});
+const checkAuth = require("../auth/checkAuth");
 
-router.get("/", Staff_Controller.staff_get_all);
+router.get("/", checkAuth, Staff_Controller.staff_get_all);
 
-router.get("/id/:id", Staff_Controller.staff_get_by_id);
+router.get("/id/:id", checkAuth, Staff_Controller.staff_get_by_id);
 
-router.get("/name/:name", Staff_Controller.staff_get_by_name);
+router.get("/name/:name", checkAuth, Staff_Controller.staff_get_by_name);
 
-router.get("/age/:age", Staff_Controller.staff_get_by_age);
+router.get("/age/:age", checkAuth, Staff_Controller.staff_get_by_age);
 
-router.get("/email/:email", Staff_Controller.staff_get_by_emailAddress);
+router.get(
+  "/email/:email",
+  checkAuth,
+  Staff_Controller.staff_get_by_emailAddress
+);
 
-router.post("/add", upload.single("staffImage"), (req, res) => {
+router.post("/add", checkAuth, async (req, res) => {
   staff_post_record(req, res);
+  return res.send(req.body).status(201);
 });
 
-router.put("/update", upload.single("staffImage"), (req, res) => {
+router.put("/update", checkAuth, async (req, res) => {
   staff_alter_record(req, res);
+  console.log(+req.body.id);
+  return res.send(req.body).status(201);
 });
 
-router.post("/delete", (req, res) => {
+router.post("/delete", checkAuth, async (req, res) => {
   staff_delete_record(req, res);
+  return res.send(req.body).status(202);
 });
 
 module.exports = router;

@@ -9,23 +9,33 @@ const {
   service_center_delete_record,
 } = require("../controllers/ServiceCenter");
 
-router.get("/", ServiceCenter_Controller.service_center_get_all);
-router.get("/id/:id", ServiceCenter_Controller.service_center_get_by_id);
+const checkAuth = require("../auth/checkAuth");
+
+router.get("/", checkAuth, ServiceCenter_Controller.service_center_get_all);
+router.get(
+  "/id/:id",
+  checkAuth,
+  ServiceCenter_Controller.service_center_get_by_id
+);
 router.get(
   "/location/:location",
+  checkAuth,
   ServiceCenter_Controller.service_center_get_by_location
 );
 
-router.post("/add", (req, res) => {
+router.post("/add", checkAuth, async (req, res) => {
   service_center_post_record(req, res);
+  return res.send(req.body).status(201);
 });
 
-router.put("/update", (req, res) => {
+router.put("/update", checkAuth, async (req, res) => {
   service_center_alter_record(req, res);
+  return res.send(req.body).status(202);
 });
 
-router.post("/delete", (req, res) => {
+router.post("/delete", checkAuth, async (req, res) => {
   service_center_delete_record(req, res);
+  return res.send(req.body).status(202);
 });
 
 module.exports = router;

@@ -107,26 +107,13 @@ exports.transportation_post_record = async (req, res) => {
       { autoCommit: true }
     );
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -165,26 +152,13 @@ exports.transportation_alter_record = async (req, res) => {
       { autoCommit: true }
     );
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
@@ -210,26 +184,13 @@ exports.transportation_delete_record = async (req, res) => {
       { autoCommit: true }
     );
   } catch (err) {
-    return res
-      .json({
-        error: err,
-      })
-      .status(400);
+    console.error(err.message);
   } finally {
     if (connection) {
       try {
         await connection.close();
-        return res
-          .json({
-            message: req.body,
-          })
-          .status(400);
       } catch (err) {
-        return res
-          .json({
-            error: err,
-          })
-          .status(400);
+        console.error(err.message);
       }
     }
   }
